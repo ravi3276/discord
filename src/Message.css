@@ -1,0 +1,16 @@
+.message{
+    display:flex;
+    align-items:center;
+    padding: 15px;
+    color: #ffff;
+}
+
+.chat__messageinfo{
+    margin-left:20px;
+}
+
+.timestamp{
+    color: grey;
+    margin-left:20px;
+    font-size: small;
+}
