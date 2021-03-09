@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useState,useEffect} from 'react'
 import './Sidebar.css';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AddIcon from '@material-ui/icons/Add';
@@ -10,7 +10,33 @@ import Avatar from '@material-ui/core/Avatar';
 import MicIcon from '@material-ui/icons/Mic';
 import HeadsetIcon from '@material-ui/icons/Headset';
 import SettingsIcon from '@material-ui/icons/Settings';
+import {useSelector} from 'react-redux';
+import {selectUser} from './features/userSlice';
+import db,{auth} from './firebase'
 function Sidebar() {
+    const user=useSelector(selectUser)
+    const [channels,setChannels]=useState([])
+
+        useEffect(()=>{
+            db.collection('channels').onSnapshot(snapshot =>(
+                setChannels(snapshot.docs.map(doc=>({
+                    id: doc.id,
+                    channel: doc.data()
+                })))
+            ))
+        },[])
+
+
+    const addchannels=()=>{
+        const channelName=prompt('enter your channel name')
+
+        if (channelName) {
+            db.collection('channels').add({
+                channelName:channelName,
+            })
+        }
+    }
+
     return (
         <div className="sidebar">
 
@@ -27,14 +53,20 @@ function Sidebar() {
                     </div>
                     <AddIcon
                      className="addchannel"
-                     
+                     onClick={addchannels}
                      />
                 </div>
 
                 <div className="sidebar__channelslist">
-                <SidebarChannels />
-                <SidebarChannels />
-                <SidebarChannels />
+
+                {
+                    channels.map((({id, channel})=>(
+                        <SidebarChannels key={id} id={id} channelName={channel.channelName}/>
+
+                    )))
+                }
+
+               
                 
                 </div>
 
@@ -56,10 +88,12 @@ function Sidebar() {
             </div>
 
             <div className="searchbar__profile">
-            <Avatar />
+            <Avatar 
+            onClick={()=>auth.signOut()}
+            src={user.photo}/>
             <div className="searchbar__profileinfo">
-                <h3>Ravi Teja</h3>
-                <p>#F27SR</p>
+                <h3>{user.displayName}</h3>
+                <p>#{user.uid.substring(0,5)}</p>
             </div>
             <div className="searchbar__profileicon">
                 <MicIcon />

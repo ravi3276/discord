@@ -2,14 +2,14 @@ import React from 'react'
 import './Message.css'
 import Avatar from '@material-ui/core/Avatar';
 
-function Message() {
+function Message({photo,displayName}) {
     return (
         <div className="message">
-        <Avatar />
+        <Avatar src={photo}/>
 
         <div className="chat__messageinfo">
         <h4>
-            Ravi Teja
+            {displayName}
             <span className="timestamp">timestamp....</span>
 
             </h4>
