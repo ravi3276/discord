@@ -1,5 +1,7 @@
-import React from 'react'
+import React,{useState,useEffect} from 'react'
+import firebase from 'firebase' 
 import './Chat.css'
+import db from './firebase';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import PeopleAltIcon from '@material-ui/icons/PeopleAlt';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
@@ -15,10 +17,38 @@ import {useSelector} from 'react-redux';
 import {selectchannelId,selectchannelName} from './features/appSlice'
 import {selectUser} from './features/userSlice'
 function Chat() {
+    const [messages,setMessages]=useState([]);
+    const [input,setInput]=useState('');
     const user=useSelector(selectUser);
     const channelId=useSelector(selectchannelId);
     const channelName=useSelector(selectchannelName);
+    // console.log(input)
+    // console.log(channelId)
+    // console.log(channelName)
+    useEffect(()=>{
+        if(channelId){
 
+            db.collection('channels').doc(channelId).collection('message')
+            .orderBy('timestamp', 'asc')
+            .onSnapshot(snapshot=>(
+                setMessages(snapshot.docs.map(doc=>doc.data()))
+            ))
+        }
+    },[channelId])
+
+
+const sendmessage=(e)=>{
+        e.preventDefault();
+
+        db.collection('channels').doc(channelId).collection('message').add({
+            message:input,
+            user:user,
+            timestamp:firebase.firestore.FieldValue.serverTimestamp(),
+
+        })
+
+        setInput("")
+}
     return (
         <div className="chat">
             <div className="chat__header">
@@ -44,7 +74,14 @@ function Chat() {
             </div>
 
             <div className="chat__body">
-            <Message photo={user.photo} displayName={user.displayName}/> 
+            {
+                messages.map(message => (
+
+                    <Message
+                    message={message.message} timestamp={message.timestamp} user={message.user}
+                    /> 
+                ))
+            }
           
  
             </div>
@@ -53,8 +90,14 @@ function Chat() {
                 <AddCircleIcon  fontSize="large"/>
 
                 <form className="chat__form">
-                <input type="text" placeholder={`Message #${channelName}`} />
-                <button type="submit">send</button>
+                <input 
+                value={input}
+                onChange={e=>setInput(e.target.value)}
+                 placeholder={`Message #${channelName}`}
+                  />
+                <button
+                onClick={sendmessage}
+                type="submit">send</button>
                 </form>
 
                 <div className="chat__footericon">
